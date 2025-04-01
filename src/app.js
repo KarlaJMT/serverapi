@@ -3,6 +3,7 @@ const config = require('./config');
 const clientes = require('./modules/clientes/rutas');
 const usuarios = require('./modules/usuarios/usuarios');
 const app = express();
+app.use(express.json());
 
 
 // configuración
