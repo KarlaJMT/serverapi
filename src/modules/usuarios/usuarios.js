@@ -1,13 +1,75 @@
 const express = require('express');
 const router = express.Router();
+const respuestas = require('../../red/respuestas');
+const controladorUser = require('./controladorUsers');
 
-// Se encarga de crear la ruta raiz por así mencionarlo.
-router.get('/', function (req, res){
-    res.send('<div display: flex"><h1 style="color: black;">¡Hola, bienvenido! </h1><br> <h2 style="color: grey"> Esto es usuarios.</h2></div>');
-})
+// Obtener todos los usuarios
+router.get('/', async (req, res) => {
+  try {
+    const users = await controladorUser.todos();
+    respuestas.success(req, res, 200, users);
+  } catch (error) {
+    respuestas.error(req, res, 500, error.message);
+  }
+});
 
-router.get('/actualizado', function (req, res){
-    res.send('<h1>Usuario actualizado</h1>')
-})
+// Obtener un usuario por id
+router.get('/:id', async (req, res) => {
+  try {
+    const user = await controladorUser.uno(req.params.id);
+    if (!user) {
+      return respuestas.error(req, res, 404, 'Usuario no encontrado.');
+    }
+    respuestas.success(req, res, 200, user);
+  } catch (error) {
+    respuestas.error(req, res, 500, error.message);
+  }
+});
+
+// Registrar (crear) un nuevo usuario
+router.post('/registrar', async (req, res) => {
+  try {
+    await controladorUser.registrar(req.body);
+    respuestas.success(req, res, 200, 'Usuario registrado.');
+  } catch (error) {
+    respuestas.error(req, res, 500, error.message);
+  }
+});
+
+// Actualizar un usuario existente
+router.post('/actualizar', async (req, res) => {
+  try {
+    if (!req.body.id) {
+      return respuestas.error(req, res, 400, 'El ID es requerido para actualizar.');
+    }
+    await controladorUser.actualizar(req.body);
+    respuestas.success(req, res, 200, 'Usuario actualizado.');
+  } catch (error) {
+    respuestas.error(req, res, 500, error.message);
+  }
+});
+
+// Eliminar un usuario
+router.post('/eliminar', async (req, res) => {
+  try {
+    if (!req.body.id) {
+      return respuestas.error(req, res, 400, 'El ID es requerido para eliminar.');
+    }
+    await controladorUser.eliminar(req.body.id);
+    respuestas.success(req, res, 200, 'Usuario eliminado.');
+  } catch (error) {
+    respuestas.error(req, res, 500, error.message);
+  }
+});
+
+// Login: autenticación de usuario
+router.post('/login', async (req, res) => {
+  try {
+    const user = await controladorUser.login(req.body);
+    respuestas.success(req, res, 200, user);
+  } catch (error) {
+    respuestas.error(req, res, 500, error.message);
+  }
+});
 
 module.exports = router;
